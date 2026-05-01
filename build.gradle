@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.11.+'
+    id 'fabric-loom' version '1.11.13'
     id 'maven-publish'
 }
 
@@ -13,11 +13,19 @@ repositories {
     maven { url 'https://maven.fabricmc.net/' }
 }
 
+// Workaround for a Fabric Loom bug where transitive javadoc artifacts from
+// fabric-api submodules are rejected with "must have an intermediary source
+// namespace". We pin the dependency below to the main jar artifact only.
+
 dependencies {
     minecraft "com.mojang:minecraft:1.21.11"
     mappings "net.fabricmc:yarn:1.21.11+build.1:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.10"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.138.0+1.21.11"
+    modImplementation("net.fabricmc.fabric-api:fabric-api:0.138.0+1.21.11") {
+        // Don't pull javadoc artifacts — Loom's intermediary-namespace check
+        // chokes on them and aborts "setup Minecraft".
+        artifact { name = 'fabric-api'; type = 'jar' }
+    }
 }
 
 processResources {
